@@ -1,6 +1,15 @@
 
+all: build
+
+build: setup
+	cd trequer && wails build
+
+dev: setup
+	cd trequer && wails dev
 
 setup: wails
+
+##
 
 wails: _go/bin/wails
 
