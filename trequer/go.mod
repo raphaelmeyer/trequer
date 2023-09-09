@@ -1,4 +1,4 @@
-module changeme
+module github.com/raphaelmeyer/trequer
 
 go 1.18
 
