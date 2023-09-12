@@ -18,14 +18,21 @@ func NewTrequer() *Trequer {
 }
 
 func (t *Trequer) GetMidiPorts() []MidiPort {
-	seq := midi.NewSequencer()
-
 	ports := []MidiPort{}
-	for _, port := range seq.ListPorts() {
+
+	snd, err := midi.NewSndSeq()
+	if err != nil {
+		return ports
+	}
+	defer snd.Close()
+
+	ps, err := snd.ListPorts()
+	if err != nil {
+		return ports
+	}
+	for _, port := range ps {
 		ports = append(ports, MidiPort{
-			Id:     port.Id,
-			Client: port.Client,
-			Port:   port.Port,
+			Id: port.Id, Client: port.Client, Port: port.Port,
 		})
 	}
 
