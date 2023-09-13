@@ -95,12 +95,11 @@ func (s *SndSeq) ListPorts() ([]MidiPort, error) {
 			portName := C.GoString(C.snd_seq_port_info_get_name(pinfo))
 
 			ports = append(ports, MidiPort{
-				Id:     fmt.Sprintf("%d:%d", clientId, portId),
-				Client: clientName,
-				Port:   portName})
+				Address: fmt.Sprintf("%d:%d", clientId, portId),
+				Client:  clientName,
+				Port:    portName})
 		}
 	}
 
 	return ports, nil
-
 }

@@ -1,7 +1,7 @@
 package midi
 
 type MidiPort struct {
-	Id     string
-	Client string
-	Port   string
+	Address string
+	Client  string
+	Port    string
 }

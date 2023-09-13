@@ -5,9 +5,9 @@ import (
 )
 
 type MidiPort struct {
-	Id     string `json:"id"`
-	Client string `json:"client"`
-	Port   string `json:"port"`
+	Address string `json:"address"`
+	Client  string `json:"client"`
+	Port    string `json:"port"`
 }
 
 type Trequer struct {
@@ -32,7 +32,7 @@ func (t *Trequer) GetMidiPorts() []MidiPort {
 	}
 	for _, port := range ps {
 		ports = append(ports, MidiPort{
-			Id: port.Id, Client: port.Client, Port: port.Port,
+			Address: port.Address, Client: port.Client, Port: port.Port,
 		})
 	}
 

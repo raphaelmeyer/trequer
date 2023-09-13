@@ -7,7 +7,7 @@ const ports = ref<string[]>([]);
 
 onMounted(() => {
   GetMidiPorts().then((value) => {
-    ports.value = value.map((port) => port.id + ' | ' + port.client + ' | ' + port.port);
+    ports.value = value.map((port) => port.address + ' | ' + port.client + ' | ' + port.port);
   });
 });
 </script>
