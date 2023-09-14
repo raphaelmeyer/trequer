@@ -10,16 +10,10 @@
 // This message is sent when a note is depressed (start).
 // (kkkkkkk) is the key (note) number. (vvvvvvv) is the velocity.
 
-// song
-// track
-// sequence
-// row
-// pattern
-// channel
-// note
-// order
+export type ChannelId = number;
+export type PatternId = number;
 
-export interface Channel {
+export interface MidiChannel {
   address: string;
   channel: number;
 }
@@ -32,15 +26,16 @@ export interface Note {
 }
 
 export interface Track {
+  length: 64;
   notes: Note[];
 }
 
 export interface Pattern {
-  tracks: Track[];
+  tracks: Record<ChannelId, Track>;
 }
 
 export interface Song {
-  channels: Channel[];
-  patterns: Pattern[];
-  sequence: number[];
+  channels: Record<ChannelId, MidiChannel>;
+  patterns: Record<PatternId, Pattern>;
+  sequence: PatternId[];
 }
