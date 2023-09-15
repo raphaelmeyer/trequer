@@ -8,9 +8,9 @@ const props = defineProps<{
 </script>
 
 <template>
-  <div class="flex bg-sky-950 w-32 px-2">
+  <div class="flex px-2 rounded-md [&:nth-child(4n+1)]:bg-sky-900">
     <div class="w-10">{{ keyName(props.note.key) }}</div>
-    <div class="w-8">{{ props.note.volume }}</div>
-    <div class="w-8">{{ props.note.length }}</div>
+    <div class="w-8 text-right">{{ props.note.volume }}</div>
+    <div class="w-8 text-right">{{ props.note.length }}</div>
   </div>
 </template>

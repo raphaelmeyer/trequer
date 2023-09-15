@@ -26,7 +26,7 @@ const notes: Note[] = [
 </script>
 
 <template>
-  <div>
+  <div class="bg-sky-950 border-sky-600 border-4 rounded-xl w-32 p-2">
     <TrackRow v-for="(note, index) in notes" :key="index" :note="note" />
   </div>
 </template>
