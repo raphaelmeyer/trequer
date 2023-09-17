@@ -12,6 +12,7 @@
 
 export type ChannelId = number;
 export type PatternId = number;
+export type Tick = number;
 
 export interface MidiChannel {
   address: string;
@@ -19,7 +20,6 @@ export interface MidiChannel {
 }
 
 export interface Note {
-  tick: number;
   key: number;
   volume: number;
   length: number; //ticks
@@ -27,7 +27,7 @@ export interface Note {
 
 export interface Track {
   length: 64;
-  notes: Note[];
+  notes: Record<Tick, Note>;
 }
 
 export interface Pattern {
