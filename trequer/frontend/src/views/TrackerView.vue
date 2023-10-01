@@ -3,6 +3,22 @@ import SelectOutput from '@/components/SelectOutput.vue';
 import PatternEditor from '@/components/PatternEditor.vue';
 import PatternSelector from '@/components/PatternSelector.vue';
 import SequenceEditor from '@/components/SequenceEditor.vue';
+import { onMounted, onUnmounted } from 'vue';
+import { useEditorStore } from '@/stores/editor';
+
+const editor = useEditorStore();
+
+function onKeyup(event: KeyboardEvent) {
+  editor.handleKey(event);
+}
+
+onMounted(() => {
+  document.addEventListener('keyup', onKeyup);
+});
+
+onUnmounted(() => {
+  document.removeEventListener('keyup', onKeyup);
+});
 </script>
 
 <template>

@@ -7,7 +7,7 @@ import LabelBox from './LabelBox.vue';
 import TrackRow from '@/components/TrackRow.vue';
 
 const song = useSongStore();
-const track = song.track(0, 0);
+const track = computed(() => song.track(0, 0));
 
 const editor = useEditorStore();
 const current = computed(() => {
