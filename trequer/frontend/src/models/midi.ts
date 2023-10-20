@@ -1,7 +1,7 @@
 const names = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 
 export function keyName(key: number): string {
-  if (key < 12) {
+  if (key <= 20) {
     return '';
   }
   if (key > 127) {
