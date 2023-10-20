@@ -10,6 +10,8 @@
 // This message is sent when a note is depressed (start).
 // (kkkkkkk) is the key (note) number. (vvvvvvv) is the velocity.
 
+export const TrackLength = 64;
+
 export type ChannelId = number;
 export type PatternId = number;
 export type Tick = number;
@@ -26,7 +28,7 @@ export interface Note {
 }
 
 export interface Track {
-  length: 64;
+  length: 64; // use TrackLength here
   notes: Record<Tick, Note>;
 }
 

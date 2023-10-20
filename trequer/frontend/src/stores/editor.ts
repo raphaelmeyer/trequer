@@ -1,7 +1,7 @@
 import { ref } from 'vue';
 import { defineStore } from 'pinia';
 
-import type { ChannelId, PatternId, Tick } from '@/models/song';
+import { TrackLength, type ChannelId, type PatternId, type Tick } from '@/models/song';
 import { useSongStore } from './song';
 
 export const useEditorStore = defineStore('editor', () => {
@@ -44,10 +44,27 @@ export const useEditorStore = defineStore('editor', () => {
           song.setNote({ key: keys[event.key], volume: 64, length: 2 });
           break;
 
+        case 'ArrowUp':
+          currentTick.value = _clamp(0, currentTick.value - 1, TrackLength - 1);
+          break;
+        case 'ArrowDown':
+          currentTick.value = _clamp(0, currentTick.value + 1, TrackLength - 1);
+          break;
+        case 'ArrowLeft':
+          currentChannel.value--;
+          break;
+        case 'ArrowRight':
+          currentChannel.value++;
+          break;
+
         default:
           break;
       }
     }
+  }
+
+  function _clamp(min: number, max: number, value: number): number {
+    return Math.max(min, Math.min(value, max));
   }
 
   return { currentPattern, currentChannel, currentTick, handleKey };
