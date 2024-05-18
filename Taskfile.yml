@@ -15,6 +15,11 @@ tasks:
     deps:
       - wails
 
+  lint:
+    cmds:
+      - npm run lint
+    dir: trequer/frontend
+
   wails:
     internal: true
     cmds:
