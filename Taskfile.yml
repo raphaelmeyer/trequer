@@ -1,0 +1,24 @@
+version: "3"
+
+tasks:
+  build:
+    cmds:
+      - wails build
+    dir: trequer
+    deps:
+      - wails
+
+  dev:
+    cmds:
+      - wails dev
+    dir: trequer
+    deps:
+      - wails
+
+  wails:
+    internal: true
+    cmds:
+      - go install github.com/wailsapp/wails/v2/cmd/wails@latest
+    dir: trequer
+    generates:
+      - _go/bin/wails
