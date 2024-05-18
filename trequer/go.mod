@@ -1,4 +1,4 @@
-module trequer
+module github.com/raphaelmeyer/trequer
 
 go 1.21
 
