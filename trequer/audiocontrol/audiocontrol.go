@@ -50,10 +50,4 @@ func (ac *AudioControl) ListMidiOutputs() []string {
 	}
 
 	return ports
-
-	// auto ports = jack_get_ports(client, nullptr, "midi", JackPortIsInput);
-	// for (char const **port = ports; *port != nullptr; ++port) {
-	//   printf("%s\n", *port);
-	// }
-	// jack_free(ports);
 }

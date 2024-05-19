@@ -1,14 +1,13 @@
 <script setup lang="ts">
-import { ListMidiOutputs } from '../../wailsjs/go/audiocontrol/AudioControl';
+import { useMidiPortsStore } from '@/stores/midiport';
 
-import { onMounted, ref } from 'vue';
+import { computed, onMounted } from 'vue';
 
-const ports = ref<string[]>([]);
+const midiports = useMidiPortsStore();
+const ports = computed(() => midiports.ports);
 
 onMounted(() => {
-  ListMidiOutputs().then((value) => {
-    ports.value = value;
-  });
+  midiports.refresh();
 });
 </script>
 
