@@ -1,1 +1,13 @@
 @import './base.css';
+
+@font-face {
+  font-family: 'VT323-Regular';
+  font-style: normal;
+  src:
+    local('VT323-Regular'),
+    url(@/assets/VT323-Regular.ttf) format('truetype');
+}
+
+body {
+  font-family: 'VT323-Regular';
+}
