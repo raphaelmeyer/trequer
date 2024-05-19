@@ -15,9 +15,16 @@ tasks:
     deps:
       - wails
 
-  lint:
+  frontend:lint:
     cmds:
-      - npm run lint
+      - npx prettier --check .
+      - npx eslint .
+      - npx vue-tsc --build --force
+    dir: trequer/frontend
+
+  frontend:format:
+    cmds:
+      - npx prettier --write .
     dir: trequer/frontend
 
   wails:
