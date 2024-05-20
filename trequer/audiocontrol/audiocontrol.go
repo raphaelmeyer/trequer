@@ -1,53 +1,29 @@
 package audiocontrol
 
-// #cgo pkg-config: jack
-// #include <jack/jack.h>
-// #include <jack/midiport.h>
-// #include <jack/ringbuffer.h>
-/*
-jack_client_t * jack_client_open_ (const char *client_name, jack_options_t options, jack_status_t *status) {
-	return jack_client_open(client_name, options, status);
-}
-*/
-import "C"
 import (
 	"fmt"
-	"unsafe"
+
+	"github.com/raphaelmeyer/trequer/jack"
 )
 
 type AudioControl struct {
-	client *C.jack_client_t
+	client *jack.Client
 }
 
 func NewAudioControl() *AudioControl {
 	ac := new(AudioControl)
 
-	clientName := C.CString("Trequer")
-	defer C.free(unsafe.Pointer(clientName))
-	ac.client = C.jack_client_open_(clientName, C.JackNullOption, nil)
+	ac.client, _ = jack.ClientOpen("Trequer", jack.NullOption)
+
+	ac.client.SetPortRegistrationCallback(func() {
+		fmt.Println("PortRegistration")
+	})
+
+	ac.client.PortRegister("midi-out", jack.DefaultMidiType, jack.PortIsOutput)
 
 	return ac
 }
 
 func (ac *AudioControl) ListMidiOutputs() []string {
-	filter := C.CString("midi")
-	defer C.free(unsafe.Pointer(filter))
-
-	var ports []string
-
-	cports, _ := C.jack_get_ports(ac.client, nil, filter, C.JackPortIsInput)
-	if cports != nil {
-		defer C.jack_free(unsafe.Pointer(cports))
-		cport := cports
-		for *cport != nil {
-			name := C.GoString(*cport)
-
-			fmt.Println(name)
-			ports = append(ports, name)
-
-			cport = (**C.char)(unsafe.Add(unsafe.Pointer(cport), unsafe.Sizeof(cport)))
-		}
-	}
-
-	return ports
+	return ac.client.GetPorts("", "midi", jack.PortIsInput)
 }
