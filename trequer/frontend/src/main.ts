@@ -12,3 +12,12 @@ app.use(createPinia());
 app.use(router);
 
 app.mount('#app');
+
+import { EventsOn } from '../wailsjs/runtime';
+
+import { useMidiPortsStore } from './stores/midiport';
+
+const midiports = useMidiPortsStore();
+midiports.refresh();
+
+EventsOn('ports-changed', () => midiports.refresh());

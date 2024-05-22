@@ -1,6 +1,7 @@
 import { ref } from 'vue';
 import { defineStore } from 'pinia';
-import { ListMidiOutputs } from '../../wailsjs/go/audiocontrol/AudioControl';
+
+import { ListMidiOutputs } from '../../wailsjs/go/main/App';
 
 export const useMidiPortsStore = defineStore('midiport', () => {
   const ports = ref<string[]>([]);

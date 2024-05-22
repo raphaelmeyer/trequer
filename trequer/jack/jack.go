@@ -7,19 +7,23 @@ package jack
 #include <jack/ringbuffer.h>
 
 extern jack_client_t *jack_client_open_go(const char *client_name, jack_options_t options, jack_status_t *status);
-extern int jack_set_port_registration_callback_go(jack_client_t *client, void *arg);
+extern int jack_set_port_registration_callback_go(jack_client_t *client, uintptr_t arg);
+extern int jack_set_client_registration_callback_go(jack_client_t *client, uintptr_t arg);
 */
 import "C"
 
 import (
 	"fmt"
+	"runtime/cgo"
 	"unsafe"
 )
 
 type PortRegistrationCallback func()
+type ClientRegistrationCallback func()
 
 type callbacks struct {
-	portRegistration PortRegistrationCallback
+	portRegistration   cgo.Handle
+	clientRegistration cgo.Handle
 }
 
 type Client struct {
@@ -55,17 +59,34 @@ func ClientOpen(name string, options Options) (*Client, error) {
 	var status C.jack_status_t
 	cclient := C.jack_client_open_go(cname, (C.jack_options_t)(options), &status)
 	if int(status) != 0 {
-		return nil, fmt.Errorf("Status: %v", int(status))
+		return nil, fmt.Errorf("status: %v", int(status))
 	}
 
-	return &Client{handle: cclient, callbacks: callbacks{nil}}, nil
+	return &Client{handle: cclient, callbacks: callbacks{}}, nil
+}
+
+func (c *Client) ClientClose() {
+	C.jack_client_close(c.handle)
+}
+
+func (c *Client) Activate() {
+	C.jack_activate(c.handle)
 }
 
 func (c *Client) SetPortRegistrationCallback(callback PortRegistrationCallback) error {
-	c.callbacks.portRegistration = callback
-	result := C.jack_set_port_registration_callback_go(c.handle, unsafe.Pointer(&c.callbacks))
+	c.callbacks.portRegistration = cgo.NewHandle(callback)
+	result := C.jack_set_port_registration_callback_go(c.handle, C.uintptr_t(c.callbacks.portRegistration))
 	if result != 0 {
-		return fmt.Errorf("Error %v", result)
+		return fmt.Errorf("error %v", result)
+	}
+	return nil
+}
+
+func (c *Client) SetClientRegistrationCallback(callback ClientRegistrationCallback) error {
+	c.callbacks.clientRegistration = cgo.NewHandle(callback)
+	result := C.jack_set_port_registration_callback_go(c.handle, C.uintptr_t(c.callbacks.clientRegistration))
+	if result != 0 {
+		return fmt.Errorf("error %v", result)
 	}
 	return nil
 }
@@ -78,7 +99,7 @@ func (c *Client) PortRegister(portName string, portType PortType, flags PortFlag
 
 	port := C.jack_port_register(c.handle, cname, ctype, (C.ulong)(flags), 0)
 	if port == nil {
-		return nil, fmt.Errorf("Failed to register port")
+		return nil, fmt.Errorf("failed to register port")
 	}
 	return &Port{handle: port}, nil
 
@@ -110,14 +131,17 @@ func (c *Client) GetPorts(portPattern string, typePattern string, flags PortFlag
 }
 
 //export goPortRegistration
-func goPortRegistration(port C.jack_port_id_t, reg C.int, arg unsafe.Pointer) {
-	fmt.Printf("Port %v register (%v)", port, reg)
-	callbacks := (*callbacks)(arg)
-	if callbacks == nil {
-		return
+func goPortRegistration(port C.jack_port_id_t, reg C.int, arg C.uintptr_t) {
+	callback := cgo.Handle(arg).Value().(PortRegistrationCallback)
+	if callback != nil {
+		callback()
 	}
-	if callbacks.portRegistration == nil {
-		return
+}
+
+//export goClientRegistration
+func goClientRegistration(name *C.char, reg C.int, arg C.uintptr_t) {
+	callback := cgo.Handle(arg).Value().(ClientRegistrationCallback)
+	if callback != nil {
+		callback()
 	}
-	callbacks.portRegistration()
 }
