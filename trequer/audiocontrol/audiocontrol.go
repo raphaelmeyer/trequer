@@ -1,51 +1,43 @@
 package audiocontrol
 
 import (
+	"context"
+	"log"
+
 	"github.com/raphaelmeyer/trequer/jack"
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 type AudioControl struct {
 	client *jack.Client
-	out    *jack.Port
-
-	onPortsChanged func()
+	ctx    context.Context
 }
 
-func NewAudioControl() *AudioControl {
-	client, err := jack.ClientOpen("Trequer", jack.NullOption)
+func NewAudioControl(ctx context.Context) *AudioControl {
+	client, err := jack.NewClient("Trequer")
 	if err != nil {
-		panic(err)
+		log.Fatalln(err)
 	}
 
-	out, err := client.PortRegister("midi-out", jack.DefaultMidiType, jack.PortIsOutput)
-	if err != nil {
-		panic(err)
-	}
+	ac := &AudioControl{client: client, ctx: ctx}
 
-	ac := &AudioControl{client: client, out: out}
-
-	err = client.SetPortRegistrationCallback(func() {
-		if ac.onPortsChanged != nil {
-			ac.onPortsChanged()
-		}
-	})
-	if err != nil {
-		panic(err)
-	}
-
-	client.Activate()
+	client.SetCallbackHandler(ac)
 
 	return ac
 }
 
-func (ac *AudioControl) Destroy() {
-	ac.client.ClientClose()
+func (ac *AudioControl) Close() {
+	ac.client.Close()
 }
 
-func (ac *AudioControl) OnPortsChanged(callback func()) {
-	ac.onPortsChanged = callback
+func (ac *AudioControl) ListMidiOut() ([]string, error) {
+	return ac.client.ListMidiOut()
 }
 
-func (ac *AudioControl) ListMidiOutputs() []string {
-	return ac.client.GetPorts("", "midi", jack.PortIsInput)
+func (ac *AudioControl) OnBeat(beat uint32) {
+	runtime.EventsEmit(ac.ctx, "on-beat", beat)
+}
+
+func (ac *AudioControl) OnRegisterPort() {
+	runtime.EventsEmit(ac.ctx, "ports-changed")
 }

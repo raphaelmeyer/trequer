@@ -2,9 +2,9 @@ package main
 
 import (
 	"context"
+	"log"
 
 	"github.com/raphaelmeyer/trequer/audiocontrol"
-	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 type App struct {
@@ -18,22 +18,25 @@ func NewApp() *App {
 
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
-	a.audio = audiocontrol.NewAudioControl()
 }
 
 func (a *App) domReady(ctx context.Context) {
-	a.audio.OnPortsChanged(func() {
-		runtime.EventsEmit(a.ctx, "ports-changed")
-	})
+	a.audio = audiocontrol.NewAudioControl(a.ctx)
 }
 
 func (a *App) shutdown(ctx context.Context) {
-	a.audio.Destroy()
+	a.audio.Close()
 }
 
-func (a *App) ListMidiOutputs() []string {
+func (a *App) ListMidiOut() []string {
 	if a.audio == nil {
 		return []string{}
 	}
-	return a.audio.ListMidiOutputs()
+	outs, err := a.audio.ListMidiOut()
+	if err != nil {
+		log.Println(err)
+		return []string{}
+	}
+
+	return outs
 }

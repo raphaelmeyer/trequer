@@ -8,7 +8,6 @@ package jack
 
 extern jack_client_t *jack_client_open_go(const char *client_name, jack_options_t options, jack_status_t *status);
 extern int jack_set_port_registration_callback_go(jack_client_t *client, uintptr_t arg);
-extern int jack_set_client_registration_callback_go(jack_client_t *client, uintptr_t arg);
 */
 import "C"
 
@@ -18,41 +17,32 @@ import (
 	"unsafe"
 )
 
-type PortRegistrationCallback func()
-type ClientRegistrationCallback func()
-
-type callbacks struct {
-	portRegistration   cgo.Handle
-	clientRegistration cgo.Handle
-}
-
 type Client struct {
-	handle    *C.jack_client_t
-	callbacks callbacks
+	handle  *C.jack_client_t
+	channel *C.jack_port_t
+
+	cbHandle  cgo.Handle
+	cbHandler CallbackHandler
 }
 
-type Port struct {
-	handle *C.jack_port_t
-}
-
-type Options int
-type PortFlags uint
-type PortType string
+type options int
+type portFlags uint
+type portType string
 
 const (
-	NullOption Options = Options(C.JackNullOption)
+	NullOption options = options(C.JackNullOption)
 )
 
 const (
-	PortIsOutput PortFlags = PortFlags(C.JackPortIsOutput)
-	PortIsInput  PortFlags = PortFlags(C.JackPortIsInput)
+	portIsOutput portFlags = portFlags(C.JackPortIsOutput)
+	portIsInput  portFlags = portFlags(C.JackPortIsInput)
 )
 
 const (
-	DefaultMidiType PortType = "8 bit raw midi"
+	midiType portType = "8 bit raw midi"
 )
 
-func ClientOpen(name string, options Options) (*Client, error) {
+func clientOpen(name string, options options) (*Client, error) {
 	cname := C.CString(name)
 	defer C.free(unsafe.Pointer(cname))
 
@@ -62,36 +52,34 @@ func ClientOpen(name string, options Options) (*Client, error) {
 		return nil, fmt.Errorf("status: %v", int(status))
 	}
 
-	return &Client{handle: cclient, callbacks: callbacks{}}, nil
+	return &Client{handle: cclient}, nil
 }
 
-func (c *Client) ClientClose() {
-	C.jack_client_close(c.handle)
+func (c *Client) clientClose() error {
+	status := C.jack_client_close(c.handle)
+	if int(status) != 0 {
+		return fmt.Errorf("status: %v", int(status))
+	}
+	return nil
 }
 
-func (c *Client) Activate() {
-	C.jack_activate(c.handle)
+func (c *Client) activate() error {
+	status := C.jack_activate(c.handle)
+	if int(status) != 0 {
+		return fmt.Errorf("status: %v", int(status))
+	}
+	return nil
 }
 
-func (c *Client) SetPortRegistrationCallback(callback PortRegistrationCallback) error {
-	c.callbacks.portRegistration = cgo.NewHandle(callback)
-	result := C.jack_set_port_registration_callback_go(c.handle, C.uintptr_t(c.callbacks.portRegistration))
+func (c *Client) setPortRegistrationCallback(cbHandle cgo.Handle) error {
+	result := C.jack_set_port_registration_callback_go(c.handle, C.uintptr_t(cbHandle))
 	if result != 0 {
 		return fmt.Errorf("error %v", result)
 	}
 	return nil
 }
 
-func (c *Client) SetClientRegistrationCallback(callback ClientRegistrationCallback) error {
-	c.callbacks.clientRegistration = cgo.NewHandle(callback)
-	result := C.jack_set_port_registration_callback_go(c.handle, C.uintptr_t(c.callbacks.clientRegistration))
-	if result != 0 {
-		return fmt.Errorf("error %v", result)
-	}
-	return nil
-}
-
-func (c *Client) PortRegister(portName string, portType PortType, flags PortFlags) (*Port, error) {
+func (c *Client) portRegister(portName string, portType portType, flags portFlags) (*C.jack_port_t, error) {
 	cname := C.CString(portName)
 	defer C.free(unsafe.Pointer(cname))
 	ctype := C.CString(string(portType))
@@ -101,11 +89,11 @@ func (c *Client) PortRegister(portName string, portType PortType, flags PortFlag
 	if port == nil {
 		return nil, fmt.Errorf("failed to register port")
 	}
-	return &Port{handle: port}, nil
+	return port, nil
 
 }
 
-func (c *Client) GetPorts(portPattern string, typePattern string, flags PortFlags) []string {
+func (c *Client) getPorts(portPattern string, typePattern string, flags portFlags) []string {
 	cportPattern := C.CString(portPattern)
 	defer C.free(unsafe.Pointer(cportPattern))
 
@@ -132,16 +120,8 @@ func (c *Client) GetPorts(portPattern string, typePattern string, flags PortFlag
 
 //export goPortRegistration
 func goPortRegistration(port C.jack_port_id_t, reg C.int, arg C.uintptr_t) {
-	callback := cgo.Handle(arg).Value().(PortRegistrationCallback)
-	if callback != nil {
-		callback()
-	}
-}
-
-//export goClientRegistration
-func goClientRegistration(name *C.char, reg C.int, arg C.uintptr_t) {
-	callback := cgo.Handle(arg).Value().(ClientRegistrationCallback)
-	if callback != nil {
-		callback()
+	client := cgo.Handle(arg).Value().(*Client)
+	if client.cbHandler != nil {
+		client.cbHandler.OnRegisterPort()
 	}
 }
