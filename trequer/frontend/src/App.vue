@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { RouterLink, RouterView } from 'vue-router';
+
+import { Quit } from '../wailsjs/runtime';
 </script>
 
 <template>
@@ -8,6 +10,7 @@ import { RouterLink, RouterView } from 'vue-router';
       <nav>
         <RouterLink to="/">Trequer</RouterLink>
         <RouterLink to="/settings">Settings</RouterLink>
+        <div @click="Quit()">Exit</div>
       </nav>
     </div>
   </header>
