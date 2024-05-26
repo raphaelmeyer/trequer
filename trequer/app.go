@@ -40,3 +40,11 @@ func (a *App) ListMidiOut() []string {
 
 	return outs
 }
+
+func (a *App) Play() {
+	a.audio.Play()
+}
+
+func (a *App) Stop() {
+	a.audio.Stop()
+}
