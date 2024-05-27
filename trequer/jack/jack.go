@@ -7,6 +7,7 @@ package jack
 #include <jack/ringbuffer.h>
 
 struct ProcessContext {
+  int playing;
   uint64_t frames;
   uint32_t frames_per_beat;
   jack_ringbuffer_t *beat;
@@ -91,6 +92,7 @@ func (c *Client) setProcessCallback() error {
 		return fmt.Errorf("create beat buffer")
 	}
 
+	c.process.playing = 0
 	c.process.frames = 0
 	c.process.frames_per_beat = (60 * 48000) / (120)
 

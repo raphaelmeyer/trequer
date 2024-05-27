@@ -61,3 +61,12 @@ func (c *Client) SetCallbackHandler(handler CallbackHandler) {
 func (c *Client) ListMidiOut() ([]string, error) {
 	return c.getPorts("", "midi", portIsInput), nil
 }
+
+func (c *Client) Play() {
+	c.process.frames = 0
+	c.process.playing = 1
+}
+
+func (c *Client) Stop() {
+	c.process.playing = 0
+}

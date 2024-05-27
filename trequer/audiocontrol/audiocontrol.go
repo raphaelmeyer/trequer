@@ -34,9 +34,13 @@ func (ac *AudioControl) ListMidiOut() ([]string, error) {
 	return ac.client.ListMidiOut()
 }
 
-func (ac *AudioControl) Play() {}
+func (ac *AudioControl) Play() {
+	ac.client.Play()
+}
 
-func (ac *AudioControl) Stop() {}
+func (ac *AudioControl) Stop() {
+	ac.client.Stop()
+}
 
 func (ac *AudioControl) OnBeat(beat uint32) {
 	runtime.EventsEmit(ac.ctx, "on-beat", beat)

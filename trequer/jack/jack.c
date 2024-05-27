@@ -12,6 +12,11 @@ static void port_registration_callback(jack_port_id_t port, int reg,
 
 static int process_callback(jack_nframes_t nframes, void *arg) {
   struct ProcessContext *context = (struct ProcessContext *)(arg);
+
+  if (!context->playing) {
+    return 0;
+  }
+
   uint32_t const old_beat = context->frames / context->frames_per_beat;
   uint32_t const next_beat =
       (context->frames + nframes) / context->frames_per_beat;
